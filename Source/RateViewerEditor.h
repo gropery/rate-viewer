@@ -22,8 +22,8 @@
 */
 
 //This prevents include loops. We recommend changing the macro to a name suitable for your plugin
-#ifndef VISUALIZERPLUGINEDITOR_H_DEFINED
-#define VISUALIZERPLUGINEDITOR_H_DEFINED
+#ifndef RATEVIEWEREDITOR_H_DEFINED
+#define RATEVIEWEREDITOR_H_DEFINED
 
 #include <VisualizerEditorHeaders.h>
 
@@ -33,23 +33,32 @@
 	Includes buttons for opening the canvas in a tab or window
 */
 
-class VisualizerPluginEditor : public VisualizerEditor
+class RateViewerEditor : public VisualizerEditor,
+	public ComboBox::Listener
 {
 public:
 
 	/** Constructor */
-	VisualizerPluginEditor(GenericProcessor* parentNode);
+	RateViewerEditor(GenericProcessor* parentNode);
 
 	/** Destructor */
-	~VisualizerPluginEditor() { }
+	~RateViewerEditor() { }
 
 	/** Creates the canvas */
 	Visualizer* createNewCanvas();
 
+	/** ComboBox::Listener callback*/
+	void comboBoxChanged(ComboBox* comboBox) override;
+
+	/** Called when selected stream is updated*/
+	void selectedStreamHasChanged() override;
+
 private:
 
+	std::unique_ptr<ComboBox> electrodeList;
+
 	/** Generates an assertion if this class leaks */
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VisualizerPluginEditor);
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RateViewerEditor);
 };
 
 

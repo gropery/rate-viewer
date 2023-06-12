@@ -22,25 +22,27 @@
 */
 
 //This prevents include loops. We recommend changing the macro to a name suitable for your plugin
-#ifndef VISUALIZERPLUGIN_H_DEFINED
-#define VISUALIZERPLUGIN_H_DEFINED
+#ifndef RATEVIEWER_H_DEFINED
+#define RATEVIEWER_H_DEFINED
 
 #include <ProcessorHeaders.h>
 
+
+class RateViewerCanvas; // <--- need to declare this class at the top of the file
 
 /** 
 	A plugin that includes a canvas for displaying incoming data
 	or an extended settings interface.
 */
 
-class VisualizerPlugin : public GenericProcessor
+class RateViewer : public GenericProcessor
 {
 public:
 	/** The class constructor, used to initialize any members.*/
-	VisualizerPlugin();
+	RateViewer();
 
 	/** The class destructor, used to deallocate memory*/
-	~VisualizerPlugin();
+	~RateViewer();
 
 	/** If the processor has a custom editor, this method must be defined to instantiate it. */
 	AudioProcessorEditor* createEditor() override;
@@ -78,10 +80,43 @@ public:
 		Parameter objects*/
 	void loadCustomParametersFromXml(XmlElement* parentElement) override;
 
+	/** Returns the names of available electrodes */
+	Array<String> getElectrodesForStream(uint16 streamId);
+
+	/** Called whenever a parameter's value is changed */
+	void parameterValueChanged(Parameter* param) override;
+
+	/** Changes the electrode that's used to calculate spike rate */
+	void setActiveElectrode(uint16 streamId, String name);
+
+	/** Pointer to the Visualizer -- initialize to nullptr*/
+	RateViewerCanvas* canvas = nullptr;
+
+	/** Enables the editor */
+	bool startAcquisition() override;
+
+	/** Disables the editor*/
+	bool stopAcquisition() override;
+
 private:
 
 	/** Generates an assertion if this class leaks */
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VisualizerPlugin);
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RateViewer);
+
+	struct Electrode
+	{
+		String name;
+
+		uint16 streamId;
+
+		float sampleRate;
+
+		bool isActive = false; // To keep track of which electrode is being visualized
+	};
+
+
+	OwnedArray<Electrode> electrodes;
+	std::map<const SpikeChannel*, Electrode*> electrodeMap;
 
 };
 

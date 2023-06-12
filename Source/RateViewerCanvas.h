@@ -21,27 +21,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifndef VISUALIZERCANVAS_H_INCLUDED
-#define VISUALIZERCANVAS_H_INCLUDED
+#ifndef RATEVIEWCANVAS_H_INCLUDED
+#define RATEVIEWCANVAS_H_INCLUDED
 
 #include <VisualizerWindowHeaders.h>
 
-class VisualizerPlugin;
+class RateViewer;
 
 /**
 * 
 	Draws data in real time
 
 */
-class VisualizerPluginCanvas : public Visualizer
+class RateViewerCanvas : public Visualizer
 {
 public:
 
 	/** Constructor */
-	VisualizerPluginCanvas(VisualizerPlugin* processor);
+	RateViewerCanvas(RateViewer* processor);
 
 	/** Destructor */
-	~VisualizerPluginCanvas();
+	~RateViewerCanvas();
 
 	/** Updates boundaries of sub-components whenever the canvas size changes */
 	void resized() override;
@@ -58,16 +58,58 @@ public:
 	/** Draws the canvas background */
 	void paint(Graphics& g) override;
 
+	/** Set the window size for spike rate calculation */
+	void setWindowSizeMs(int windowSize_);
+
+	/** Set the bin size for spike rate calculation */
+	void setBinSizeMs(int binSize_);
+
+	/** Set the sample rate for the active electrode */
+	void setSampleRate(float sampleRate);
+
+	/** Change the plot title*/
+	void setPlotTitle(const String& title);
+
+	/** Adds a spike sample number */
+	void addSpike(int64 sample_number);
+
+	/** Sets the sample index for the latest buffer*/
+	void setMostRecentSample(int64 sampleNum);
+
 private:
 
 	/** Pointer to the processor class */
-	VisualizerPlugin* processor;
+	RateViewer* processor;
 
 	/** Class for plotting data */
 	InteractivePlot plt;
 
+	float sampleRate = 0.0f;
+
+	int windowSize = 1000;
+	int binSize = 50;
+
+	Array<int64> incomingSpikeSampleNums;
+
+	int64 mostRecentSample = 0;
+
+	/** Recomputes bin edges */
+	void recomputeBinEdges();
+
+	Array<double> binEdges;
+	Array<int> spikeCounts;
+
+	/** Recounts spikes/bin; returns true if a new bin is available */
+	bool countSpikes();
+
+	int64 sampleOnLastRedraw = 0;
+	int maxCount = 1;
+
+	/** Change the XY range of the spike rate plot */
+	void updatePlotRange();
+
 	/** Generates an assertion if this class leaks */
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VisualizerPluginCanvas);
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RateViewerCanvas);
 };
 
 
